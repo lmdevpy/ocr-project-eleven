@@ -36,13 +36,17 @@ def showSummary():
 
 @app.route('/book/<competition>/<club>')
 def book(competition,club):
-    foundClub = [c for c in clubs if c['name'] == club][0]
-    foundCompetition = [c for c in competitions if c['name'] == competition][0]
-    if foundClub and foundCompetition:
-        return render_template('booking.html',club=foundClub,competition=foundCompetition)
-    else:
-        flash("Something went wrong-please try again")
-        return render_template('welcome.html', club=club, competitions=competitions)
+    try:
+        foundClub = [c for c in clubs if c['name'] == club][0]
+    except IndexError:
+        flash("club not found")
+        return render_template('welcome.html', club=club, competitions=competitions), 404
+    try:
+        foundCompetition = [c for c in competitions if c['name'] == competition][0]
+    except IndexError:
+        flash("competition not found")
+        return render_template('welcome.html', club=club, competitions=competitions), 404
+    return render_template('booking.html',club=foundClub,competition=foundCompetition)
 
 
 @app.route('/purchasePlaces',methods=['POST'])
@@ -50,8 +54,15 @@ def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
+    if not (competition or club):
+        flash("Invalid informations")
+        return render_template('welcome.html'), 404
+    if placesRequired > 12 or placesRequired > int(club['points']):
+        flash("Invalid number of places")
+        return render_template('booking.html', club=club, competition=competition)
     competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
-    flash('Great-booking complete!')
+    club['points'] = int(club['points']) - placesRequired
+    flash('booking completed!')
     return render_template('welcome.html', club=club, competitions=competitions)
 
 
