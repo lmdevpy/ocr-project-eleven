@@ -1,5 +1,5 @@
 import json
-from flask import Flask,render_template,request,redirect,flash,url_for, abort
+from flask import Flask,render_template,request,redirect,flash,url_for, abort, session
 
 
 
@@ -49,14 +49,20 @@ def book(competition,club):
     return render_template('booking.html',club=foundClub,competition=foundCompetition)
 
 
-@app.route('/purchasePlaces',methods=['POST'])
-def purchasePlaces():
-    competition = [c for c in competitions if c['name'] == request.form['competition']][0]
-    club = [c for c in clubs if c['name'] == request.form['club']][0]
+@app.route('/purchasePlaces/<club>',methods=['POST'])
+def purchasePlaces(club):
+    try:
+        club = [c for c in clubs if c['name'] == request.form['club']][0]
+    except IndexError:
+        flash("Invalid club")
+        return render_template('welcome.html', club=club, competitions=competitions), 404
+    try:
+        competition = [c for c in competitions if c['name'] == request.form['competition']][0]
+    except IndexError:
+        flash("Invalid competition")
+        return render_template('welcome.html', club=club, competitions=competitions), 404
     placesRequired = int(request.form['places'])
-    if not (competition or club):
-        flash("Invalid informations")
-        return render_template('welcome.html'), 404
+    # club cannot use more than their points
     if placesRequired > 12 or placesRequired > int(club['points']):
         flash("Invalid number of places")
         return render_template('booking.html', club=club, competition=competition)
