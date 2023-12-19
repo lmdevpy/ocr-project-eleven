@@ -1,6 +1,6 @@
 import json
 from flask import Flask,render_template,request,redirect,flash,url_for, abort, session
-
+from datetime import datetime
 
 
 def loadClubs():
@@ -12,6 +12,11 @@ def loadClubs():
 def loadCompetitions():
     with open('competitions.json') as comps:
          listOfCompetitions = json.load(comps)['competitions']
+         # a verifier format de la date
+         date_now = datetime.now()
+         for competition in listOfCompetitions:
+             competition['date'] = datetime.strptime(competition['date'], "%Y-%m-%d %H:%M:%S" )
+             competition['finished'] = competition['date'] < date_now
          return listOfCompetitions
 
 
@@ -46,6 +51,9 @@ def book(competition,club):
     except IndexError:
         flash("competition not found")
         return render_template('welcome.html', club=club, competitions=competitions), 404
+    if foundCompetition['finished']:
+        flash("competition is finished")
+        return render_template('welcome.html', club=club, competitions=competitions)
     return render_template('booking.html',club=foundClub,competition=foundCompetition)
 
 
