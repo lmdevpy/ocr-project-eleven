@@ -12,7 +12,6 @@ def loadClubs():
 def loadCompetitions():
     with open('competitions.json') as comps:
          listOfCompetitions = json.load(comps)['competitions']
-         # a verifier format de la date
          date_now = datetime.now()
          for competition in listOfCompetitions:
              competition['date'] = datetime.strptime(competition['date'], "%Y-%m-%d %H:%M:%S" )
@@ -73,8 +72,9 @@ def purchasePlaces(club):
     # club cannot use more than their points
     if placesRequired > 12 or placesRequired > int(club['points']):
         flash("Invalid number of places")
-        return render_template('booking.html', club=club, competition=competition)
+        return render_template('welcome.html', club=club, competition=competition)
     competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+
     club['points'] = int(club['points']) - placesRequired
     flash('booking completed!')
     return render_template('welcome.html', club=club, competitions=competitions)

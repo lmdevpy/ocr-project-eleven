@@ -1,13 +1,25 @@
 import pytest
+import server
 
-def test_purchasePlaces_with_valid_data(client):
+def test_purchasePlaces_with_valid_data(client, fixture_loadClubs, fixture_loadCompetitions):
     data = {
         'competition': 'Spring Festival',
         'club': 'Simply Lift',
         'places': 5
     }
+    # Get the points club and the competition places before purchase
+    initial_numberOfPlaces = int(server.competitions[0]['numberOfPlaces'])
+    initial_clubPoints = int(server.clubs[0]['points'])
+
     response = client.post('/purchasePlaces/Simply%20Lift', data=data)
     assert response.status_code == 200
+
+    # Verify that points and places are deducted
+    remaining_places = initial_numberOfPlaces - 5
+    remaining_points = initial_clubPoints - 5
+
+    assert server.competitions[0]['numberOfPlaces'] == remaining_places
+    assert server.clubs[0]['points'] == remaining_points
 
 def test_purchasePlaces_with_invalid_competition(client):
     data = {
@@ -17,6 +29,7 @@ def test_purchasePlaces_with_invalid_competition(client):
     }
     response = client.post('/purchasePlaces/Simply%20Lift', data=data)
     assert response.status_code == 404
+    assert b"Invalid competition" in response.data
 
 def test_purchasePlaces_with_invalid_club(client):
     data = {
@@ -26,6 +39,7 @@ def test_purchasePlaces_with_invalid_club(client):
     }
     response = client.post('/purchasePlaces/invalid_club', data=data)
     assert response.status_code == 404
+    assert b"Invalid club" in response.data
 
 def test_purchasePlaces_with_invalid_number_of_places(client):
     data = {
@@ -34,10 +48,8 @@ def test_purchasePlaces_with_invalid_number_of_places(client):
         'places': 15
     }
     response = client.post('/purchasePlaces/Simply%20Lift', data=data)
-    assert response.status_code == 200  # Adjust the status code based on your application logic
-    with client.session_transaction() as session:
-        flash_messages = dict(session['_flashes'])
-        assert 'Invalid number of places' in flash_messages['message']
+    assert response.status_code == 200
+    assert b'Invalid number of places' in response.data
 
 if __name__ == '__main__':
     pytest.main()
