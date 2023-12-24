@@ -12,12 +12,12 @@ def test_purchasePlaces_with_valid_data(client, fixture_loadClubs, fixture_loadC
     initial_clubPoints = int(server.clubs[0]['points'])
 
     response = client.post('/purchasePlaces/Simply%20Lift', data=data)
-    assert response.status_code == 200
 
     # Verify that points and places are deducted
     remaining_places = initial_numberOfPlaces - 5
     remaining_points = initial_clubPoints - 5
 
+    assert response.status_code == 200
     assert server.competitions[0]['numberOfPlaces'] == remaining_places
     assert server.clubs[0]['points'] == remaining_points
 
