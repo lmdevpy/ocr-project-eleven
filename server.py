@@ -24,7 +24,6 @@ app.secret_key = 'something_special'
 
 competitions = loadCompetitions()
 clubs = loadClubs()
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -43,8 +42,8 @@ def book(competition,club):
     try:
         foundClub = [c for c in clubs if c['name'] == club][0]
     except IndexError:
-        flash("club not found")
-        return render_template('welcome.html', club=club, competitions=competitions), 404
+        flash("club not found : please login again")
+        return render_template('index.html'), 404
     try:
         foundCompetition = [c for c in competitions if c['name'] == competition][0]
     except IndexError:
@@ -56,13 +55,13 @@ def book(competition,club):
     return render_template('booking.html',club=foundClub,competition=foundCompetition)
 
 
-@app.route('/purchasePlaces/<club>',methods=['POST'])
-def purchasePlaces(club):
+@app.route('/purchasePlaces/',methods=['POST'])
+def purchasePlaces():
     try:
         club = [c for c in clubs if c['name'] == request.form['club']][0]
     except IndexError:
-        flash("Invalid club")
-        return render_template('welcome.html', club=club, competitions=competitions), 404
+        flash("Invalid club : please login again")
+        return render_template('index.html'), 404
     try:
         competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     except IndexError:
@@ -79,7 +78,9 @@ def purchasePlaces(club):
     return render_template('welcome.html', club=club, competitions=competitions)
 
 
-# TODO: Add route for points display
+@app.route('/displayPointsBoard/')
+def displayPointsBoard():
+    return render_template('display_points.html', clubs=clubs)
 
 
 @app.route('/logout')

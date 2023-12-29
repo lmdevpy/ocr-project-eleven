@@ -1,7 +1,7 @@
 import pytest
 import server
 
-def test_purchasePlaces_with_valid_data(client, fixture_loadClubs, fixture_loadCompetitions):
+def test_purchasePlaces_with_valid_data(client):
     data = {
         'competition': 'Spring Festival',
         'club': 'Simply Lift',
@@ -11,7 +11,7 @@ def test_purchasePlaces_with_valid_data(client, fixture_loadClubs, fixture_loadC
     initial_numberOfPlaces = int(server.competitions[0]['numberOfPlaces'])
     initial_clubPoints = int(server.clubs[0]['points'])
 
-    response = client.post('/purchasePlaces/Simply%20Lift', data=data)
+    response = client.post('/purchasePlaces/', data=data)
 
     # Verify that points and places are deducted
     remaining_places = initial_numberOfPlaces - 5
@@ -27,7 +27,7 @@ def test_purchasePlaces_with_invalid_competition(client):
         'club': 'Simply Lift',
         'places': 5
     }
-    response = client.post('/purchasePlaces/Simply%20Lift', data=data)
+    response = client.post('/purchasePlaces/', data=data)
     assert response.status_code == 404
     assert b"Invalid competition" in response.data
 
@@ -37,7 +37,7 @@ def test_purchasePlaces_with_invalid_club(client):
         'club': 'invalid_club',
         'places': 5
     }
-    response = client.post('/purchasePlaces/invalid_club', data=data)
+    response = client.post('/purchasePlaces/', data=data)
     assert response.status_code == 404
     assert b"Invalid club" in response.data
 
@@ -47,7 +47,7 @@ def test_purchasePlaces_with_invalid_number_of_places(client):
         'club': 'Simply Lift',
         'places': 15
     }
-    response = client.post('/purchasePlaces/Simply%20Lift', data=data)
+    response = client.post('/purchasePlaces/', data=data)
     assert response.status_code == 200
     assert b'Invalid number of places' in response.data
 
